@@ -1,0 +1,20 @@
+cmake_minimum_required(VERSION 3.1)
+project(OpenGLTriangle C)
+
+set(CMAKE_C_STANDARD 99)
+
+# Find required packages
+find_package(OpenGL REQUIRED)
+
+# Set GLFW and GLEW paths if installed via Homebrew
+include_directories(/opt/homebrew/include)
+link_directories(/opt/homebrew/lib)
+
+add_executable(OpenGLTriangle main.c)
+
+# Link against OpenGL, GLEW, and GLFW
+target_link_libraries(OpenGLTriangle
+    ${OPENGL_LIBRARIES}
+    glfw
+    GLEW
+)
