@@ -10,10 +10,10 @@ find_package(OpenGL REQUIRED)
 include_directories(/opt/homebrew/include)
 link_directories(/opt/homebrew/lib)
 
-add_executable(OpenGLTriangle main.c)
+add_executable(simulation main.c render.c render.h mutexes.c mutexes.h constants.h structures.h)
 
 # Link against OpenGL, GLEW, and GLFW
-target_link_libraries(OpenGLTriangle
+target_link_libraries(simulation
     ${OPENGL_LIBRARIES}
     glfw
     GLEW

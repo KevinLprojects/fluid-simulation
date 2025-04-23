@@ -1,194 +1,81 @@
-#define GLEW_STATIC
-#define GLEW_NO_GLU
-#define GL_SILENCE_DEPRECATION
-#define GL_GLEXT_PROTOTYPES
-
+#include "render.h"
+#include "constants.h"
+#include "mutexes.h"
+#include "structures.h"
 
 #include <math.h>
-#include <GL/glew.h>
-#include <GLFW/glfw3.h>
 #include <pthread.h>
 #include <stdlib.h>
 #include <stdio.h>
 #include <time.h>
 #include <unistd.h>
 
-#define NUM_CIRCLES 100
-#define CIRCLE_SEGMENTS 32
-#define PIXEL_RADIUS 40.0f
+CircleData circles[NUM_PARTICLES];
 
-typedef struct {
-    float x, y;
-    float r, g, b;
-} CircleData;
+pthread_t update;
 
-CircleData circles[NUM_CIRCLES];
-pthread_mutex_t circlesMutex;
-
-GLuint program;
-GLuint instanceVBO_pos, instanceVBO_col;
-GLint windowSizeLoc, pixelRadiusLoc;
-GLFWwindow* window;
-
-void* update_circles(void* arg) {
+void* physicsUpdate(void* arg) {
     while (1) {
-        pthread_mutex_lock(&circlesMutex);
-        for (int i = 0; i < NUM_CIRCLES; i++) {
-            circles[i].x = rand() / (float)RAND_MAX;
-            circles[i].y = rand() / (float)RAND_MAX;
-            circles[i].r = rand() / (float)RAND_MAX;
-            circles[i].g = rand() / (float)RAND_MAX;
-            circles[i].b = rand() / (float)RAND_MAX;
+        pthread_mutex_lock(&renderDataMutex);
+        for (int i = 0; i < NUM_PARTICLES; i++) {
+            circles[i].x += 0.01 * (rand() / (float)RAND_MAX - 0.5);
+            circles[i].y += 0.01 * (rand() / (float)RAND_MAX - 0.5);
+            circles[i].r += 0.1 * (rand() / (float)RAND_MAX - 0.5);
+            circles[i].g += 0.1 * (rand() / (float)RAND_MAX - 0.5);
+            circles[i].b += 0.1 * (rand() / (float)RAND_MAX - 0.5);
+
+            if (circles[i].x < 0) {
+                circles[i].x = 0;
+            } 
+            else if (circles[i].x > 1) {
+                circles[i].x = 1;
+            }
+
+            if (circles[i].y < 0) {
+                circles[i].y = 0;
+            } 
+            else if (circles[i].y > 1) {
+                circles[i].y = 1;
+            }
+
+            if (circles[i].r < 0) {
+                circles[i].r = 0;
+            } 
+            else if (circles[i].r > 1) {
+                circles[i].r = 1;
+            }
+
+            if (circles[i].g < 0) {
+                circles[i].g = 0;
+            } 
+            else if (circles[i].g > 1) {
+                circles[i].g = 1;
+            }
+
+            if (circles[i].b < 0) {
+                circles[i].b = 0;
+            } 
+            else if (circles[i].b > 1) {
+                circles[i].b = 1;
+            }
         }
-        pthread_mutex_unlock(&circlesMutex);
+        pthread_mutex_unlock(&renderDataMutex);
         usleep(16000); // ~60 fps
     }
     return NULL;
 }
 
-void render() {
-    int width, height;
-    glfwGetFramebufferSize(window, &width, &height);
-
-    // Update instance buffers
-    float instancePositions[NUM_CIRCLES * 2];
-    float instanceColors[NUM_CIRCLES * 3];
-
-    pthread_mutex_lock(&circlesMutex);
-    for (int i = 0; i < NUM_CIRCLES; i++) {
-
-        instancePositions[i * 2 + 0] = 2.0f * circles[i].x;
-        instancePositions[i * 2 + 1] = 2.0f * circles[i].y;
-
-        // Set color
-        instanceColors[i * 3 + 0] = circles[i].r;
-        instanceColors[i * 3 + 1] = circles[i].g;
-        instanceColors[i * 3 + 2] = circles[i].b;
-    }
-    pthread_mutex_unlock(&circlesMutex);
-
-    glUseProgram(program);
-
-    glUniform2f(windowSizeLoc, (float)width, (float)height);
-    glUniform1f(pixelRadiusLoc, PIXEL_RADIUS); // or whatever radius you want
-
-    glBindBuffer(GL_ARRAY_BUFFER, instanceVBO_pos);
-    glBufferSubData(GL_ARRAY_BUFFER, 0, sizeof(instancePositions), instancePositions);
-
-    glBindBuffer(GL_ARRAY_BUFFER, instanceVBO_col);
-    glBufferSubData(GL_ARRAY_BUFFER, 0, sizeof(instanceColors), instanceColors);
-
-    glClear(GL_COLOR_BUFFER_BIT);
-    glDrawArraysInstanced(GL_TRIANGLE_FAN, 0, CIRCLE_SEGMENTS + 2, NUM_CIRCLES);
-    glfwSwapBuffers(window);
-}
-
-
-void refreshCallback(GLFWwindow* win) {
-    render();
-}
-
 int main() {
-    if (!glfwInit()) return -1;
-
-    window = glfwCreateWindow(800, 600, "Instanced Circles", NULL, NULL);
-    if (!window) { glfwTerminate(); return -1; }
-    glfwMakeContextCurrent(window);
-    glewExperimental = GL_TRUE;
-    glewInit();
-
     srand((unsigned int)time(NULL));
-    pthread_mutex_init(&circlesMutex, NULL);
 
-    pthread_t updater;
-    pthread_create(&updater, NULL, update_circles, NULL);
-
-    // Create circle geometry
-    float circle[(CIRCLE_SEGMENTS + 2) * 2];
-    circle[0] = 0.0f; circle[1] = 0.0f;
-    for (int i = 0; i <= CIRCLE_SEGMENTS; i++) {
-        float angle = (float)i / CIRCLE_SEGMENTS * 2.0f * 3.1415926f;
-        circle[(i + 1) * 2 + 0] = cosf(angle);
-        circle[(i + 1) * 2 + 1] = sinf(angle);
+    for (int i = 0; i < NUM_PARTICLES; i++) {
+            circles[i].x = rand() / (float)RAND_MAX;
+            circles[i].y = rand() / (float)RAND_MAX;
+            circles[i].r = rand() / (float)RAND_MAX;
+            circles[i].g = rand() / (float)RAND_MAX;
+            circles[i].b = rand() / (float)RAND_MAX;
     }
-
-    // Buffers
-    GLuint vao, vbo;
-    glGenVertexArrays(1, &vao);
-    printf("Setting up circle geometry...\n");
-    glBindVertexArray(vao);
-
-    glGenBuffers(1, &vbo);
-    glBindBuffer(GL_ARRAY_BUFFER, vbo);
-    glBufferData(GL_ARRAY_BUFFER, sizeof(circle), circle, GL_STATIC_DRAW);
-    glEnableVertexAttribArray(0); // position
-    glVertexAttribPointer(0, 2, GL_FLOAT, GL_FALSE, 0, 0);
-
-    // Instance position buffer
-    glGenBuffers(1, &instanceVBO_pos);
-    glBindBuffer(GL_ARRAY_BUFFER, instanceVBO_pos);
-    glBufferData(GL_ARRAY_BUFFER, NUM_CIRCLES * 2 * sizeof(float), NULL, GL_DYNAMIC_DRAW);
-    glEnableVertexAttribArray(1); // offset
-    glVertexAttribPointer(1, 2, GL_FLOAT, GL_FALSE, 0, 0);
-    glVertexAttribDivisor(1, 1);
-
-    // Instance color buffer
-    glGenBuffers(1, &instanceVBO_col);
-    glBindBuffer(GL_ARRAY_BUFFER, instanceVBO_col);
-    glBufferData(GL_ARRAY_BUFFER, NUM_CIRCLES * 3 * sizeof(float), NULL, GL_DYNAMIC_DRAW);
-    glEnableVertexAttribArray(2); // color
-    glVertexAttribPointer(2, 3, GL_FLOAT, GL_FALSE, 0, 0);
-    glVertexAttribDivisor(2, 1);
-
-    // Shaders
-    const char* vertexShaderSource =
-        "#version 120\n"
-        "uniform vec2 windowSize;\n"
-        "uniform float pixelRadius;\n"
-        "attribute vec2 position;\n"
-        "attribute vec2 offset;\n"
-        "attribute vec3 color;\n"
-        "varying vec3 vColor;\n"
-        "void main() {\n"
-        "   vec2 scale = vec2(pixelRadius * 2.0 / windowSize.x,\n"
-        "                     pixelRadius * 2.0 / windowSize.y);\n"
-        "   vec2 screenOffset = vec2(-1.0, -1.0) + offset;\n"
-        "   gl_Position = vec4(position * scale + screenOffset, 0.0, 1.0);\n"
-        "   vColor = color;\n"
-        "}\n";
-
-    const char* fragmentShaderSource =
-        "#version 120\n"
-        "varying vec3 vColor;\n"
-        "void main() {\n"
-        "   gl_FragColor = vec4(vColor, 1.0);\n"
-        "}\n";
-
-    GLuint vs = glCreateShader(GL_VERTEX_SHADER);
-    GLuint fs = glCreateShader(GL_FRAGMENT_SHADER);
-    glShaderSource(vs, 1, &vertexShaderSource, NULL);
-    glShaderSource(fs, 1, &fragmentShaderSource, NULL);
-    glCompileShader(vs);
-    glCompileShader(fs);
-
-    program = glCreateProgram();
-    glAttachShader(program, vs);
-    glAttachShader(program, fs);
-    glBindAttribLocation(program, 0, "position");
-    glBindAttribLocation(program, 1, "offset");
-    glBindAttribLocation(program, 2, "color");
-    glLinkProgram(program);
-    glUseProgram(program);
-
-    windowSizeLoc = glGetUniformLocation(program, "windowSize");
-    pixelRadiusLoc = glGetUniformLocation(program, "pixelRadius");
-
-    // Main loop
-    while (!glfwWindowShouldClose(window)) {
-        render();
-        glfwPollEvents();
-    }
-
-    glfwTerminate();
-    return 0;
+    
+    pthread_create(&update, NULL, physicsUpdate, NULL);
+    loop();
 }

@@ -117,24 +117,24 @@ depend:
 .PHONY : depend
 
 #=============================================================================
-# Target rules for targets named OpenGLTriangle
+# Target rules for targets named simulation
 
 # Build rule for target.
-OpenGLTriangle: cmake_check_build_system
-	$(MAKE) $(MAKESILENT) -f CMakeFiles/Makefile2 OpenGLTriangle
-.PHONY : OpenGLTriangle
+simulation: cmake_check_build_system
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/Makefile2 simulation
+.PHONY : simulation
 
 # fast build rule for target.
-OpenGLTriangle/fast:
-	$(MAKE) $(MAKESILENT) -f CMakeFiles/OpenGLTriangle.dir/build.make CMakeFiles/OpenGLTriangle.dir/build
-.PHONY : OpenGLTriangle/fast
+simulation/fast:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/simulation.dir/build.make CMakeFiles/simulation.dir/build
+.PHONY : simulation/fast
 
 main.o: main.c.o
 .PHONY : main.o
 
 # target to build an object file
 main.c.o:
-	$(MAKE) $(MAKESILENT) -f CMakeFiles/OpenGLTriangle.dir/build.make CMakeFiles/OpenGLTriangle.dir/main.c.o
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/simulation.dir/build.make CMakeFiles/simulation.dir/main.c.o
 .PHONY : main.c.o
 
 main.i: main.c.i
@@ -142,7 +142,7 @@ main.i: main.c.i
 
 # target to preprocess a source file
 main.c.i:
-	$(MAKE) $(MAKESILENT) -f CMakeFiles/OpenGLTriangle.dir/build.make CMakeFiles/OpenGLTriangle.dir/main.c.i
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/simulation.dir/build.make CMakeFiles/simulation.dir/main.c.i
 .PHONY : main.c.i
 
 main.s: main.c.s
@@ -150,8 +150,56 @@ main.s: main.c.s
 
 # target to generate assembly for a file
 main.c.s:
-	$(MAKE) $(MAKESILENT) -f CMakeFiles/OpenGLTriangle.dir/build.make CMakeFiles/OpenGLTriangle.dir/main.c.s
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/simulation.dir/build.make CMakeFiles/simulation.dir/main.c.s
 .PHONY : main.c.s
+
+mutexes.o: mutexes.c.o
+.PHONY : mutexes.o
+
+# target to build an object file
+mutexes.c.o:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/simulation.dir/build.make CMakeFiles/simulation.dir/mutexes.c.o
+.PHONY : mutexes.c.o
+
+mutexes.i: mutexes.c.i
+.PHONY : mutexes.i
+
+# target to preprocess a source file
+mutexes.c.i:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/simulation.dir/build.make CMakeFiles/simulation.dir/mutexes.c.i
+.PHONY : mutexes.c.i
+
+mutexes.s: mutexes.c.s
+.PHONY : mutexes.s
+
+# target to generate assembly for a file
+mutexes.c.s:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/simulation.dir/build.make CMakeFiles/simulation.dir/mutexes.c.s
+.PHONY : mutexes.c.s
+
+render.o: render.c.o
+.PHONY : render.o
+
+# target to build an object file
+render.c.o:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/simulation.dir/build.make CMakeFiles/simulation.dir/render.c.o
+.PHONY : render.c.o
+
+render.i: render.c.i
+.PHONY : render.i
+
+# target to preprocess a source file
+render.c.i:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/simulation.dir/build.make CMakeFiles/simulation.dir/render.c.i
+.PHONY : render.c.i
+
+render.s: render.c.s
+.PHONY : render.s
+
+# target to generate assembly for a file
+render.c.s:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/simulation.dir/build.make CMakeFiles/simulation.dir/render.c.s
+.PHONY : render.c.s
 
 # Help Target
 help:
@@ -161,10 +209,16 @@ help:
 	@echo "... depend"
 	@echo "... edit_cache"
 	@echo "... rebuild_cache"
-	@echo "... OpenGLTriangle"
+	@echo "... simulation"
 	@echo "... main.o"
 	@echo "... main.i"
 	@echo "... main.s"
+	@echo "... mutexes.o"
+	@echo "... mutexes.i"
+	@echo "... mutexes.s"
+	@echo "... render.o"
+	@echo "... render.i"
+	@echo "... render.s"
 .PHONY : help
 
 
